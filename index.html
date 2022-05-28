@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather</title>
+    <link
+      rel="shortcut icon"
+      href="https://cdn.iconscout.com/icon/free/png-64/weather-2844887-2365236.png"
+      type="image/x-icon"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto:wght@300&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+      }
+
+      body {
+        background-image: url("https://wallpaperaccess.com/full/1540021.jpg");
+      }
+
+      #heading {
+        text-align: center;
+      }
+
+      #search_bar {
+        margin: auto;
+        text-align: center;
+      }
+
+      input,
+      button {
+        font-size: 18px;
+      }
+
+      .error {
+        font-size: 30px;
+        font-weight: 600;
+        text-align: center;
+        margin: auto;
+        margin-top: 50px;
+      }
+
+      #box {
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      #content {
+        display: flex;
+        justify-content: space-around;
+        justify-items: center;
+        align-items: center;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="heading">
+      <h1>Weather in your city</h1>
+    </div>
+
+    <div id="search_bar">
+      <input id="search" type="search" placeholder="Enter Location" />
+
+      <button id="button">Search</button>
+    </div>
+
+    <div id="content">
+      <div id="container"></div>
+
+      <div class="mapouter">
+        <div class="gmap_canvas">
+          <iframe
+            width="600"
+            height="500"
+            id="gmap_canvas"
+            frameborder="0"
+            scrolling="no"
+            marginheight="0"
+            marginwidth="0"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+  document.querySelector("#button").addEventListener("click", function_search);
+
+  /*API CALL*/
+
+  function function_search() {
+    var city = document.querySelector("#search").value;
+
+    console.log(city);
+
+    var api_key = "4b115590be930b9728f00b37cba169af";
+
+    var url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${api_key}`;
+
+    async function data() {
+      try {
+        var response = await fetch(url);
+
+        var res = await response.json();
+
+        display_data(res);
+
+        console.log(res.main);
+      } catch (error) {
+        var container = document.querySelector("#content");
+        container.innerText = "No Results Found";
+        container.setAttribute("class", "error");
+
+        setTimeout(function () {
+          window.location.reload();
+        }, 2000);
+      }
+    }
+
+    data();
+
+    /*DISPLAY DATA*/
+
+    function display_data(data) {
+      document.querySelector("#container").innerHTML = null;
+
+      var box = document.createElement("div");
+      box.setAttribute("id", "box");
+      document.querySelector("#container").append(box);
+
+      var name = document.createElement("h1");
+      name.innerText = document.querySelector("#search").value.toUpperCase();
+
+      var temp = document.createElement("p");
+      temp.innerText =
+        "Temprature : " + (data.main.temp - 273.15).toFixed(1) + " C";
+
+      var temp_max = document.createElement("p");
+      temp_max.innerText =
+        "Max. Temprature : " + (data.main.temp_max - 273.15).toFixed(1) + " C";
+
+      var temp_min = document.createElement("p");
+      temp_min.innerText =
+        "Min. Temprature : " + (data.main.temp_min - 273.15).toFixed(1) + " C";
+
+      var humidity = document.createElement("p");
+      humidity.innerText = "Humidity : " + data.main.humidity + " %";
+
+      var wind = document.createElement("p");
+      wind.innerText = "Wind : " + data.wind.speed + " meter/sec";
+
+      var cloud = document.createElement("p");
+      cloud.innerText = "Cloud : " + data.clouds.all + " %";
+
+      var sunrise = document.createElement("p");
+
+      const unixTimestamp = data.sys.sunrise;
+
+      const milliseconds = data.sys.sunrise * 1000; // sys.sunrise000
+
+      const dateObject = new Date(milliseconds);
+
+      const humanDateFormat = dateObject.toLocaleString(); //2019-12-9 10:30:15
+
+      sunrise.innerText = "Sunrise : " + humanDateFormat;
+
+      var sunset = document.createElement("p");
+
+      const unixTimestamp_ = data.sys.sunset;
+
+      const milliseconds_ = data.sys.sunset * 1000; // sys.sunset000
+
+      const dateObject_ = new Date(milliseconds_);
+
+      const humanDateFormat_ = dateObject_.toLocaleString(); //2019-12-9 10:30:15
+
+      sunset.innerText = "sunset : " + humanDateFormat_;
+
+      var iframe = document.querySelector("#gmap_canvas");
+      iframe.src = `https://maps.google.com/maps?q=${name.innerText}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+
+      box.append(
+        name,
+        temp,
+        temp_max,
+        temp_min,
+        wind,
+        cloud,
+        humidity,
+        sunrise,
+        sunset
+      );
+    }
+  }
+</script>
